@@ -4,7 +4,7 @@ namespace FoodDelivery.Domain.Repositories;
 
 public interface IOrderRepository
 {
-	Task CreateAsync(Order order);
+	void Add(Order order);
 
-	Task<Order?> GetByIdAsync(int orderId);
+	Task<Order?> GetByIdAsync(int orderId, CancellationToken cancellationToken);
 }

@@ -13,19 +13,19 @@ public class RestaurantRepository : IRestaurantRepository
 		_dbContext = dbContext;
 	}
 
-	public async Task<IEnumerable<Order>> GetOrdersAsync(int restaurantId)
+	public async Task<IEnumerable<Order>> GetOrdersAsync(int restaurantId, CancellationToken cancellationToken)
 	{
 		return await _dbContext.Order
 					.Where(o => o.RestaurantId == restaurantId)
-					.ToListAsync();
+					.ToListAsync(cancellationToken);
 	}
 
-	public async Task<Restaurant?> GetRestaurantAsync(int restaurantId)
+	public async Task<Restaurant?> GetRestaurantAsync(int restaurantId, CancellationToken cancellationToken)
 	{
-		return await _dbContext.Restaurant.SingleOrDefaultAsync(r => r.Id == restaurantId);
+		return await _dbContext.Restaurant.SingleOrDefaultAsync(r => r.Id == restaurantId, cancellationToken);
 	}
 
-	public async Task<IList<RestaurantMenuItem>> GetAvailableMenuItemsAsync(int restaurantId, int[] menuItemIds)
+	public async Task<IList<RestaurantMenuItem>> GetAvailableMenuItemsAsync(int restaurantId, int[] menuItemIds, CancellationToken cancellationToken)
 	{
 		return await _dbContext.RestaurantMenuItem
 			.AsNoTracking()
@@ -39,6 +39,6 @@ public class RestaurantRepository : IRestaurantRepository
 				Name = mi.Name,
 				Price = mi.Price
 			})
-			.ToArrayAsync();
+			.ToArrayAsync(cancellationToken);
 	}
 }

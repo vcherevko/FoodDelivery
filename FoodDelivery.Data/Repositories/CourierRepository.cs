@@ -13,17 +13,17 @@ public class CourierRepository : ICourierRepository
 		_dbContext = dbContext;
 	}
 
-	public async Task<IEnumerable<Order>> GetMyDeliveriesAsync(int courierId)
+	public async Task<IEnumerable<Order>> GetMyDeliveriesAsync(int courierId, CancellationToken cancellationToken)
 	{
 		return await _dbContext.Order
 					.Where(o => o.CourierId == courierId)
-					.ToListAsync();
+					.ToListAsync(cancellationToken);
 	}
 
-	public async Task<IEnumerable<Order>> GetNewDeliveriesAsync()
+	public async Task<IEnumerable<Order>> GetNewDeliveriesAsync(CancellationToken cancellationToken)
 	{
 		return await _dbContext.Order
 					.Where(o => o.CourierId.HasValue == false)
-					.ToListAsync();
+					.ToListAsync(cancellationToken);
 	}
 }

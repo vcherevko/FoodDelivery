@@ -17,29 +17,28 @@ public class ConsumerService : IConsumerService
 		_repositoryManager = repositoryManager;
 	}
 
-	public async Task<OrderDto> GetOrderByIdAsync(int consumerId, int orderId)
+	public async Task<OrderDto> GetOrderByIdAsync(int consumerId, int orderId, CancellationToken cancellationToken)
 	{
-		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId);
+		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId, cancellationToken);
 		ValidateOrderAccess(order, consumerId);
 		return order.Adapt<OrderDto>();
 	}
 
-	public async Task<IEnumerable<OrderDto>> GetOrdersAsync(int consumerId)
+	public async Task<IEnumerable<OrderDto>> GetOrdersAsync(int consumerId, CancellationToken cancellationToken)
 	{
-		var orders = await _repositoryManager.ConsumerRepository.GetOrdersAsync(consumerId);
-		var adaptedOrders = orders.Adapt<IEnumerable<OrderDto>>();
-		var ordersAsync = adaptedOrders.ToList();
-		ordersAsync.ForEach(o =>
+		var orders = await _repositoryManager.ConsumerRepository.GetOrdersAsync(consumerId, cancellationToken);
+		var adaptedOrders = orders.Adapt<IEnumerable<OrderDto>>().ToList();
+		adaptedOrders.ForEach(o =>
 		{
 			o.TotalPrice = o.OrderItems.Sum(oi => oi.Price * oi.Quantity);
 		});
 
-		return ordersAsync;
+		return adaptedOrders;
 	}
 
-	public async Task<int> CreateOrderAsync(int consumerId, OrderCreatingDto orderModel)
+	public async Task<int> CreateOrderAsync(int consumerId, OrderCreatingDto orderModel, CancellationToken cancellationToken)
 	{
-		var availableMenuItems = await ValidateOrderAsync(orderModel);
+		var availableMenuItems = await ValidateOrderAsync(orderModel, cancellationToken);
 
 		var order = orderModel.Adapt<Order>();
 		foreach (var orderItem in order.OrderItems)
@@ -51,14 +50,14 @@ public class ConsumerService : IConsumerService
 		order.ConsumerId = consumerId;
 		order.Status = OrderStatus.ConsumerCreated;
 
-		await _repositoryManager.OrderRepository.CreateAsync(order);
-		await _repositoryManager.UnitOfWork.SaveChangesAsync();
+		_repositoryManager.OrderRepository.Add(order);
+		await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken);
 		return order.Id;
 	}
 
-	private async Task<IList<RestaurantMenuItem>> ValidateOrderAsync(OrderCreatingDto orderModel)
+	private async Task<IList<RestaurantMenuItem>> ValidateOrderAsync(OrderCreatingDto orderModel, CancellationToken cancellationToken)
 	{
-		var restaurant = await _repositoryManager.RestaurantRepository.GetRestaurantAsync(orderModel.RestaurantId);
+		var restaurant = await _repositoryManager.RestaurantRepository.GetRestaurantAsync(orderModel.RestaurantId, cancellationToken);
 		if (restaurant is null)
 		{
 			throw new RestaurantIssueException($"Restaurant with id '{orderModel.RestaurantId}' doesn't exist.");
@@ -70,7 +69,7 @@ public class ConsumerService : IConsumerService
 		}
 
 		var menuItemIds = orderModel.OrderItems.Select(i => i.RestaurantMenuItemId).ToArray();
-		var availableMenuItems = await _repositoryManager.RestaurantRepository.GetAvailableMenuItemsAsync(orderModel.RestaurantId, menuItemIds);
+		var availableMenuItems = await _repositoryManager.RestaurantRepository.GetAvailableMenuItemsAsync(orderModel.RestaurantId, menuItemIds, cancellationToken);
 		var availableMenuItemIds = availableMenuItems.Select(i => i.Id);
 		var notAvailableMenuItemIds = menuItemIds.Except(availableMenuItemIds).ToArray();
 		if (notAvailableMenuItemIds.Any())

@@ -13,17 +13,17 @@ public class CourierService : ICourierService
 		_repositoryManager = repositoryManager;
 	}
 
-	public Task<DeliveryDto> GetDeliveryAsync(int courierId, int deliveryId)
+	public Task<DeliveryDto> GetDeliveryAsync(int courierId, int deliveryId, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task<IEnumerable<DeliveryDto>> GetAvailableDeliveriesAsync(int courierId)
+	public Task<IEnumerable<DeliveryDto>> GetAvailableDeliveriesAsync(int courierId, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}
 
-	public Task<bool> PickUpDeliveryAsync(int courierId, int deliveryId)
+	public Task<bool> PickUpDeliveryAsync(int courierId, int deliveryId, CancellationToken cancellationToken)
 	{
 		throw new NotImplementedException();
 	}

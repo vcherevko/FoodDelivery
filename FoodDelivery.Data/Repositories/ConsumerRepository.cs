@@ -13,7 +13,7 @@ public class ConsumerRepository : IConsumerRepository
 		_dbContext = dbContext;
 	}
 
-	public async Task<IEnumerable<Order>> GetOrdersAsync(int consumerId)
+	public async Task<IEnumerable<Order>> GetOrdersAsync(int consumerId, CancellationToken cancellationToken)
 	{
 		return await _dbContext.Order
 			.AsNoTracking()
@@ -21,6 +21,6 @@ public class ConsumerRepository : IConsumerRepository
 			.Include(o => o.OrderItems)
 			.ThenInclude(orderItem => orderItem.RestaurantMenuItem)
 			.Include(o => o.Restaurant)
-			.ToListAsync();
+			.ToListAsync(cancellationToken);
 	}
 }

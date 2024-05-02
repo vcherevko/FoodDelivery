@@ -17,41 +17,41 @@ public class RestaurantService : IRestaurantService
 		_repositoryManager = repositoryManager;
 	}
 
-	public async Task<OrderDto> GetOrderAsync(int restaurantId, int orderId)
+	public async Task<OrderDto> GetOrderAsync(int restaurantId, int orderId, CancellationToken cancellationToken)
 	{
-		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId);
+		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId, cancellationToken);
 		ValidateOrderAccess(order, restaurantId);
 		return order.Adapt<OrderDto>();
 	}
 
-	public async Task<IEnumerable<OrderDto>> GetOrdersAsync(int restaurantId)
+	public async Task<IEnumerable<OrderDto>> GetOrdersAsync(int restaurantId, CancellationToken cancellationToken)
 	{
-		var orders = await _repositoryManager.RestaurantRepository.GetOrdersAsync(restaurantId);
+		var orders = await _repositoryManager.RestaurantRepository.GetOrdersAsync(restaurantId, cancellationToken);
 		return orders.Adapt<IEnumerable<OrderDto>>();
 	}
 
-	public async Task<bool> AcceptOrderAsync(int restaurantId, int orderId)
+	public async Task<bool> AcceptOrderAsync(int restaurantId, int orderId, CancellationToken cancellationToken)
 	{
-		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantAccepted);
+		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantAccepted, cancellationToken);
 	}
 
-	public async Task<bool> RejectOrderAsync(int restaurantId, int orderId)
+	public async Task<bool> RejectOrderAsync(int restaurantId, int orderId, CancellationToken cancellationToken)
 	{
-		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantDenied);
+		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantDenied, cancellationToken);
 	}
 
-	public async Task<bool> CompleteOrderAsync(int restaurantId, int orderId)
+	public async Task<bool> CompleteOrderAsync(int restaurantId, int orderId, CancellationToken cancellationToken)
 	{
-		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantCompleted);
+		return await ChangeOrderStatusAsync(restaurantId, orderId, OrderStatus.RestaurantCompleted, cancellationToken);
 	}
 
-	private async Task<bool> ChangeOrderStatusAsync(int restaurantId, int orderId, OrderStatus status)
+	private async Task<bool> ChangeOrderStatusAsync(int restaurantId, int orderId, OrderStatus status, CancellationToken cancellationToken)
 	{
-		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId);
+		var order = await _repositoryManager.OrderRepository.GetByIdAsync(orderId, cancellationToken);
 		ValidateOrderAccess(order, restaurantId);
 
 		order!.Status = status;
-		return await _repositoryManager.UnitOfWork.SaveChangesAsync() > 0;
+		return await _repositoryManager.UnitOfWork.SaveChangesAsync(cancellationToken) > 0;
 	}
 
 	private static void ValidateOrderAccess(Order? order, int restaurantId)

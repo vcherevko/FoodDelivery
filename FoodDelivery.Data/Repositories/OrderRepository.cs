@@ -13,15 +13,15 @@ public class OrderRepository : IOrderRepository
 		_dbContext = dbContext;
 	}
 
-	public async Task CreateAsync(Order order)
+	public void Add(Order order)
 	{
 		order.ChangedAt = DateTime.UtcNow;
 		order.CreatedAt = DateTime.UtcNow;
-		await _dbContext.Order.AddAsync(order);
+		_dbContext.Order.Add(order);
 	}
 
-	public async Task<Order?> GetByIdAsync(int orderId)
+	public async Task<Order?> GetByIdAsync(int orderId, CancellationToken cancellationToken)
 	{
-		return await _dbContext.Order.FirstOrDefaultAsync(o => o.Id == orderId);
+		return await _dbContext.Order.FirstOrDefaultAsync(o => o.Id == orderId, cancellationToken);
 	}
 }
